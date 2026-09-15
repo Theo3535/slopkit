@@ -33,7 +33,7 @@
   <script>
 const stage5Href = "slopkit/poops.html?go=1&auto=1&production=1&trigger=netcontrol&attempts=8&only=ps0_preflight,ps1_prepare,ps3_stage0,ps4_validate,ps5_stage1,ps6_stage2,ps8_stage3,ps9_stage4,ps10_stage5&log=debug&payload=1&v=final";
 const stage5ReuseHref = "slopkit/poops.html?go=1&auto=1&production=1&trigger=netcontrol&attempts=8&only=ps0_preflight,ps1_prepare,ps3_stage0,ps4_validate,ps5_stage1,ps6_stage2,ps8_stage3,ps9_stage4,ps10_stage5&log=debug&payload=1&reuse=1&v=final";
-const stage4Href = "slopkit/poops.html?go=1&trigger=netcontrol&attempts=8&only=ps0_preflight,ps1_prepare,ps3_stage0,ps4_validate,ps5_stage1,ps6_stage2,ps8_stage3,ps9_stage4&log=debug&v=final";
+const stage4AutoHref = "slopkit/poops.html?go=1&auto=1&trigger=netcontrol&attempts=8&only=ps0_preflight,ps1_prepare,ps3_stage0,ps4_validate,ps5_stage1,ps6_stage2,ps8_stage3,ps9_stage4&log=debug&v=final";
 
 try {
     var firmwareMatch = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
@@ -69,9 +69,9 @@ try {
     if (firmware === "13.00") {
         console.log("Console 13.00 détectée. Préparation des tables d'offsets...");
         if (runJb) {
-            runJb.href = stage4Href;
+            runJb.href = stage4AutoHref;
             runJb.textContent = "Kernel exploit";
-            runJb.title = "13.00 currently stops before the payload stage.";
+            runJb.title = "13.00 currently stops before payload Stage 5.";
         }
         if (runSender) {
             runSender.removeAttribute("href");

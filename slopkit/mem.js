@@ -10,8 +10,14 @@ let leakClearer = null;
 const pairStatus = {
   promoted: false,
   released: false,
-  error: ""
+  error: "primitive not installed"
 };
+
+function isAddressLike(address) {
+  return (address instanceof int64)
+    || (typeof address === "number" && Number.isFinite(address))
+    || !!(address && typeof address.low === "number" && typeof address.hi === "number");
+}
 
 function toAddressNumber(address) {
   if (address instanceof int64)
@@ -31,6 +37,12 @@ function toInt64Address(address) {
   return new int64((value - hi * 0x100000000) >>> 0, hi >>> 0);
 }
 
+function carrierView() {
+  if (!(carrier instanceof Uint8Array))
+    throw new Error("Carrier not initialized");
+  return carrier;
+}
+
 function writeAddressBytes(view, address) {
   const value = toAddressNumber(address);
   const hi = Math.floor(value / 0x100000000);
@@ -45,105 +57,123 @@ function writeAddressBytes(view, address) {
   view[0x17] = (hi >>> 24) & 0xff;
 }
 
-function initCarrier(view, origVec, leakAddr = NaN, setLeak = null, clearLeak = null) {
-  if (!(view instanceof Uint8Array))
+function initCarrier(viewOrCarrier, origVec, leakAddr = NaN, setLeak = null, clearLeak = null) {
+  if (viewOrCarrier && viewOrCarrier.view instanceof Uint8Array) {
+    carrier = viewOrCarrier.view;
+    originalVector = toAddressNumber(
+      typeof clearLeak === "function" || typeof setLeak === "function"
+        ? origVec
+        : (isAddressLike(arguments[2]) ? arguments[2] : origVec)
+    );
+    leakSlotAddress = isAddressLike(viewOrCarrier.leakSlotAddress)
+      ? toAddressNumber(viewOrCarrier.leakSlotAddress)
+      : (isAddressLike(leakAddr) ? toAddressNumber(leakAddr) : NaN);
+    leakSetter = typeof viewOrCarrier.setLeakSlot === "function"
+      ? viewOrCarrier.setLeakSlot.bind(viewOrCarrier)
+      : (typeof setLeak === "function" ? setLeak : null);
+    leakClearer = typeof viewOrCarrier.clearLeakSlot === "function"
+      ? viewOrCarrier.clearLeakSlot.bind(viewOrCarrier)
+      : (typeof clearLeak === "function" ? clearLeak : null);
+    return;
+  }
+
+  if (!(viewOrCarrier instanceof Uint8Array))
     throw new TypeError("carrier view must be a Uint8Array");
-  carrier = view;
+  carrier = viewOrCarrier;
   originalVector = toAddressNumber(origVec);
-  leakSlotAddress = Number.isFinite(leakAddr) ? toAddressNumber(leakAddr) : NaN;
+  leakSlotAddress = isAddressLike(leakAddr) ? toAddressNumber(leakAddr) : NaN;
   leakSetter = typeof setLeak === "function" ? setLeak : null;
   leakClearer = typeof clearLeak === "function" ? clearLeak : null;
 }
 
 function aim(address) {
-  if (!carrier) throw new Error("Carrier not initialized");
-  writeAddressBytes(carrier, address);
+  writeAddressBytes(carrierView(), address);
 }
 
 function restore() {
-  if (!carrier || !Number.isFinite(originalVector))
+  if (!Number.isFinite(originalVector))
     throw new Error("Cannot restore carrier");
   aim(originalVector);
 }
 
 function read1(addr) {
   aim(addr);
-  return carrier[0];
+  return carrierView()[0];
 }
 
 function read2(addr) {
   aim(addr);
-  return carrier[0] + (carrier[1] << 8);
+  const view = carrierView();
+  return view[0] + (view[1] << 8);
 }
 
 function read4(addr) {
   aim(addr);
-  return (carrier[0]
-    + (carrier[1] << 8)
-    + (carrier[2] << 16)
-    + (carrier[3] << 24)) >>> 0;
+  const view = carrierView();
+  return (view[0] + (view[1] << 8) + (view[2] << 16) + (view[3] << 24)) >>> 0;
 }
 
 function read8(addr) {
   aim(addr);
-  const low = (carrier[0]
-    + (carrier[1] << 8)
-    + (carrier[2] << 16)
-    + (carrier[3] << 24)) >>> 0;
-  const high = (carrier[4]
-    + (carrier[5] << 8)
-    + (carrier[6] << 16)
-    + (carrier[7] << 24)) >>> 0;
+  const view = carrierView();
+  const low = (view[0] + (view[1] << 8) + (view[2] << 16) + (view[3] << 24)) >>> 0;
+  const high = (view[4] + (view[5] << 8) + (view[6] << 16) + (view[7] << 24)) >>> 0;
   return new int64(low, high);
 }
 
 function write1(addr, value) {
   aim(addr);
-  carrier[0] = value & 0xff;
+  carrierView()[0] = value & 0xff;
 }
 
 function write2(addr, value) {
   aim(addr);
-  carrier[0] = value & 0xff;
-  carrier[1] = (value >>> 8) & 0xff;
+  const view = carrierView();
+  view[0] = value & 0xff;
+  view[1] = (value >>> 8) & 0xff;
 }
 
 function write4(addr, value) {
   aim(addr);
   value = value >>> 0;
-  carrier[0] = value & 0xff;
-  carrier[1] = (value >>> 8) & 0xff;
-  carrier[2] = (value >>> 16) & 0xff;
-  carrier[3] = (value >>> 24) & 0xff;
+  const view = carrierView();
+  view[0] = value & 0xff;
+  view[1] = (value >>> 8) & 0xff;
+  view[2] = (value >>> 16) & 0xff;
+  view[3] = (value >>> 24) & 0xff;
 }
 
 function write8(addr, value) {
   aim(addr);
+  const view = carrierView();
   const v = toInt64Address(value);
-  carrier[0] = v.low & 0xff;
-  carrier[1] = (v.low >>> 8) & 0xff;
-  carrier[2] = (v.low >>> 16) & 0xff;
-  carrier[3] = (v.low >>> 24) & 0xff;
-  carrier[4] = v.hi & 0xff;
-  carrier[5] = (v.hi >>> 8) & 0xff;
-  carrier[6] = (v.hi >>> 16) & 0xff;
-  carrier[7] = (v.hi >>> 24) & 0xff;
+  view[0] = v.low & 0xff;
+  view[1] = (v.low >>> 8) & 0xff;
+  view[2] = (v.low >>> 16) & 0xff;
+  view[3] = (v.low >>> 24) & 0xff;
+  view[4] = v.hi & 0xff;
+  view[5] = (v.hi >>> 8) & 0xff;
+  view[6] = (v.hi >>> 16) & 0xff;
+  view[7] = (v.hi >>> 24) & 0xff;
 }
 
 function leakval(obj) {
-  if (!Number.isFinite(leakSlotAddress) || !leakSetter || !leakClearer)
+  if (!Number.isFinite(leakSlotAddress) || !leakSetter || !leakClearer) {
+    if (typeof globalThis.leakAddress === "function" && globalThis.leakAddress !== leakval)
+      return globalThis.leakAddress(obj);
     throw new Error("leakval: address leak not available");
+  }
   leakSetter(obj);
   try {
     return read8(leakSlotAddress);
   } finally {
     leakClearer();
-    restore();
+    try { restore(); } catch (_) { }
   }
 }
 
 function assertHome() {
-  if (!carrier) return false;
+  if (!(carrier instanceof Uint8Array)) return false;
   return carrier[0] === 0x3c;
 }
 

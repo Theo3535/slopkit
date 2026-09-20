@@ -61,7 +61,8 @@
       document.getElementById("current-fw").textContent = firmware || "Not detected";
       setActionState(jailbreakButton, false);
       setActionState(senderButton, false);
-      if (supportMatrix && compatibility && compatibility.texts) {
+      if (supportMatrix && compatibility && compatibility.texts
+        && typeof compatibility.texts.supportMatrix === "string") {
         supportMatrix.textContent = compatibility.texts.supportMatrix;
       }
       if (compatibility
@@ -77,6 +78,9 @@
           prerequisiteNote.textContent = "Jailbreak and payload sender are available on this firmware.";
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
+        } else if (state === "notify") {
+          compatibilityNote.textContent = "Limited compatibility detected.";
+          prerequisiteNote.textContent = "Action unavailable on this page.";
         } else {
           compatibilityNote.textContent = "Action unavailable on this page.";
           prerequisiteNote.textContent = "This page keeps launch actions disabled unless availability is confirmed.";

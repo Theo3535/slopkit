@@ -7819,14 +7819,36 @@ export function makePoopsEngine(X) {
     flushMark("STAGE5-FETCH-BIN-OK", "bytes=" + binBytes.length);
 
     try {
-      const name = o.elfName || "elfldr-ps5-1360.elf";
-      flushMark("STAGE5-ELF-FETCH-PRE", "url=../payloads/" + name);
-      const response = await fetch("../payloads/" + name, {
-        cache: "no-store",
-      });
-      if (!response.ok)
-        throw new Error("elfldr fetch failed: HTTP " + response.status);
-      const elfBytes = new Uint8Array(await response.arrayBuffer());
+      const names = o.elfName
+        ? [o.elfName]
+        : (typeof window !== "undefined" && window.fw_str === "13.00")
+          ? ["elfldr-ps5.elf", "elfldr-ps5-1360.elf"]
+          : ["elfldr-ps5-1360.elf", "elfldr-ps5.elf"];
+      let elfBytes = null;
+      let name = "";
+      let lastFetchError = "";
+      for (const candidate of names) {
+        try {
+          flushMark("STAGE5-ELF-FETCH-PRE", "url=../payloads/" + candidate);
+          const response = await fetch("../payloads/" + candidate, {
+            cache: "no-store",
+          });
+          if (!response.ok) {
+            lastFetchError = "elfldr fetch failed for " + candidate
+              + ": HTTP " + response.status;
+            continue;
+          }
+          elfBytes = new Uint8Array(await response.arrayBuffer());
+          name = candidate;
+          break;
+        } catch (err) {
+          lastFetchError = "elfldr fetch failed for " + candidate + ": "
+            + String((err && err.message) || err);
+          continue;
+        }
+      }
+      if (elfBytes === null)
+        throw new Error(lastFetchError || "elfldr fetch failed");
       const declared = elfBytes.length;
       if (!(declared >= 4 && declared <= 0x1000000))
         throw new Error("invalid elfldr size " + declared);
@@ -7835,7 +7857,7 @@ export function makePoopsEngine(X) {
         elfBytes[2] !== 0x4c || elfBytes[3] !== 0x46
       )
         throw new Error("does not start with \x7fELF");
-      flushMark("STAGE5-ELF-FETCH-OK", "bytes=" + declared);
+      flushMark("STAGE5-ELF-FETCH-OK", "name=" + name + ",bytes=" + declared);
       const mapped = (declared + PK.PAGE - 1) & ~(PK.PAGE - 1);
       const er = await sys(
         PSYS.MMAP, i64(0, 0), mapped, PK.PROT_RW,

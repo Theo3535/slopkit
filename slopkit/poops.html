@@ -978,7 +978,7 @@ const rowByKey = new Map();
 let payloadSendBusy = false;
 const PAYLOAD_PORT = 9021;
 const PAYLOAD_BUFFER_SIZE = 0x10000;
-const PAYLOAD_MAX_SIZE = 0x400000;
+const PAYLOAD_MAX_SIZE = 0x1000000;
 let payloadSendStore = null;
 let payloadSockaddrStore = null;
 let payloadSocketOptionStore = null;
@@ -989,6 +989,12 @@ let consoleNetworkInfo = { ip: "", name: "" };
 const PAYLOADS = Object.freeze([
     { title: "ftpsrv", description: "FTP server. Runs on port 2121.",
         name: "ftpsrv-ps5.elf", info: "ftpsrv-ps5.elf - john-tornblom" },
+    { title: "ftpsrv NG", description: "Drakmor's next-gen FTP server build.",
+        name: "ftpsrv_drakmor_v1.6-ng-test2.elf",
+        info: "ftpsrv_drakmor_v1.6-ng-test2.elf - Drakmor" },
+    { title: "ftpsrv payload", description: "Alternative FTP server payload build.",
+        name: "ftpsrv_ps5-payload_v0.21.1.elf",
+        info: "ftpsrv_ps5-payload_v0.21.1.elf - john-tornblom" },
     { title: "gdbsrv", description: "GDB server. Runs on port 2159.",
         name: "gdbsrv-ps5.elf", info: "gdbsrv-ps5.elf - john-tornblom" },
     { title: "klogsrv", description: "Kernel log server. Runs on port 3232.",
@@ -997,13 +1003,78 @@ const PAYLOADS = Object.freeze([
         name: "shsrv-ps5.elf", info: "shsrv-ps5.elf - john-tornblom" },
     { title: "websrv", description: "Homebrew web server. Runs on port 8080.",
         name: "websrv-ps5.elf", info: "websrv-ps5.elf - john-tornblom" },
+    { title: "ELF Arsenal", description: "Utility bundle payload.",
+        name: "ELF_Arsenal_v1.6.22.elf",
+        info: "ELF_Arsenal_v1.6.22.elf - Arsenal" },
+    { title: "Spectrum Library", description: "Spectrum payload collection.",
+        name: "SpectrumLibrary_1.4.6.elf",
+        info: "SpectrumLibrary_1.4.6.elf - Spectrum" },
     { title: "ps5-kstuff", description: "Kernel support payload and FPKG enabler.",
         name: "kstuff.elf", info: "kstuff.elf - EchoStretch" },
     { title: "PLK Manager", description: "Payload management tools.",
         name: "PLK.elf", info: "PLK.elf - PLK" },
+    { title: "Payload Manager", description: "Alternative payload manager build.",
+        name: "pldmgr_v0.5.1.elf", info: "pldmgr_v0.5.1.elf - PLDMGR" },
     { title: "ShadowMountPlus", description: "Mount and manage game images.",
-        name: "shadowmountplus.elf", info: "shadowmountplus.elf - Drakmor" }
+        name: "shadowmountplus.elf", info: "shadowmountplus.elf - Drakmor" },
+    { title: "etaHEN", description: "Primary etaHEN payload.",
+        name: "etaHEN.elf", info: "etaHEN.elf - etaHEN" },
+    { title: "etaHEN 2.6B", description: "etaHEN 2.6B release packaged as an ELF binary.",
+        name: "etaHEN-2.6B.bin", info: "etaHEN-2.6B.bin - etaHEN", format: "elf" },
+    { title: "etaHEN 2.5B", description: "etaHEN 2.5B release packaged as an ELF binary.",
+        name: "etaHEN_v2.5B.bin", info: "etaHEN_v2.5B.bin - etaHEN", format: "elf" },
+    { title: "Garlic Save Manager", description: "Garlic save management payload.",
+        name: "garlic-savemgr_v1.13.1.elf",
+        info: "garlic-savemgr_v1.13.1.elf - Garlic" },
+    { title: "Garlic Worker", description: "Garlic background worker payload.",
+        name: "garlic-worker_v1.1.7.elf",
+        info: "garlic-worker_v1.1.7.elf - Garlic" },
+    { title: "PS5Debug NG", description: "Next-generation PS5 debug payload.",
+        name: "ps5debug-NG_v1.3.0.elf",
+        info: "ps5debug-NG_v1.3.0.elf - ps5debug" },
+    { title: "Trophy Unlocker", description: "UDS trophy unlocker payload.",
+        name: "uds-trophy-unlocker_v1.0.0.elf",
+        info: "uds-trophy-unlocker_v1.0.0.elf - UDS" },
+    { title: "WebKit Autoloader Installer", description: "Installs the WebKit autoloader payload.",
+        name: "webkit-autoloader-installer_v0.4.0.elf",
+        info: "webkit-autoloader-installer_v0.4.0.elf - Autoloader" },
+    { title: "A53 exploit", description: "Experimental low-level A53 payload.",
+        name: "a53_exploit.elf", info: "a53_exploit.elf - A53" }
 ]);
+const PAYLOADS_BY_NAME = Object.freeze(PAYLOADS.reduce(function (out, payload) {
+    out[payload.name] = Object.freeze(payload);
+    return out;
+}, Object.create(null)));
+
+function payloadHasElfSignature(bytes) {
+    return bytes.length >= 4 && bytes[0] === 0x7f && bytes[1] === 0x45
+        && bytes[2] === 0x4c && bytes[3] === 0x46;
+}
+
+const PAYLOAD_CATALOG_CHECKS = Object.freeze([
+    {
+        name: "etaHEN-bin-listed-as-elf",
+        ok: !!PAYLOADS_BY_NAME["etaHEN-2.6B.bin"]
+            && PAYLOADS_BY_NAME["etaHEN-2.6B.bin"].format === "elf"
+    },
+    {
+        name: "listed-bin-payloads-explicitly-typed",
+        ok: PAYLOADS.filter(function (payload) {
+            return payload.name.endsWith(".bin");
+        }).every(function (payload) {
+            return payload.format === "elf";
+        })
+    },
+    {
+        name: "internal-kexp-bin-stays-unlisted",
+        ok: !PAYLOADS_BY_NAME["kexp_2026_05_25.bin"]
+    }
+]);
+const PAYLOAD_CATALOG_FAILURE = PAYLOAD_CATALOG_CHECKS.find(function (check) {
+    return !check.ok;
+}) || null;
+if (PAYLOAD_CATALOG_FAILURE)
+    throw new Error("payload catalog invariant failed: " + PAYLOAD_CATALOG_FAILURE.name);
 
 function populatePayloadButtons() {
     const grid = payloadMenuEl.getElementsByClassName("payloadGrid")[0];
@@ -1210,12 +1281,13 @@ async function refreshConsoleNetworkInfo() {
     return consoleNetworkInfo;
 }
 
+function findListedPayload(name) {
+    if (!/^[A-Za-z0-9._-]+\.(elf|bin)$/.test(name)) return null;
+    return PAYLOADS_BY_NAME[name] || null;
+}
+
 function payloadIsListed(name) {
-    if (!/^[A-Za-z0-9._-]+\.elf$/.test(name)) return false;
-    const tiles = payloadMenuEl.getElementsByClassName("payloadTile");
-    for (let i = 0; i < tiles.length; ++i)
-        if (tiles[i].getAttribute("data-name") === name) return true;
-    return false;
+    return /^[A-Za-z0-9._-]+\.elf$/.test(name) && findListedPayload(name) !== null;
 }
 
 function payloadSyscallError(operation, result) {
@@ -1255,6 +1327,7 @@ function preparePayloadSender() {
 }
 
 async function sendPayloadToElfldr(name) {
+    const payload = findListedPayload(name);
     if (!elfldrSpawned)
         throw new Error("ELF loader is not ready");
     if (!P || !chain)
@@ -1263,7 +1336,7 @@ async function sendPayloadToElfldr(name) {
         throw new Error("the ROP chain is unusable after " + chainDead);
     if (payloadSenderBlocked)
         throw new Error(payloadSenderBlocked);
-    if (!payloadIsListed(name))
+    if (!payload)
         throw new Error("payload is not listed in this menu");
 
     const response = await fetch("../payloads/" + encodeURIComponent(name),
@@ -1274,10 +1347,10 @@ async function sendPayloadToElfldr(name) {
     if (!bytes.length)
         throw new Error("payload is empty");
     if (bytes.length > PAYLOAD_MAX_SIZE)
-        throw new Error("payload is larger than the 4 MiB limit");
-    if (bytes.length < 4 || bytes[0] !== 0x7f || bytes[1] !== 0x45
-        || bytes[2] !== 0x4c || bytes[3] !== 0x46)
-        throw new Error("payload does not start with the ELF signature");
+        throw new Error("payload is larger than the 16 MiB limit");
+    const payloadFormat = payload.format || "elf";
+    if (payloadFormat === "elf" && !payloadHasElfSignature(bytes))
+        throw new Error(payload.name + " is listed as an ELF payload but does not start with the ELF signature");
 
     preparePayloadSender();
     let fd = -1;

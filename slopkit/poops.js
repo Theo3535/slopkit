@@ -7826,18 +7826,24 @@ export function makePoopsEngine(X) {
       let name = "";
       let lastFetchError = "";
       for (const candidate of names) {
-        flushMark("STAGE5-ELF-FETCH-PRE", "url=../payloads/" + candidate);
-        const response = await fetch("../payloads/" + candidate, {
-          cache: "no-store",
-        });
-        if (!response.ok) {
-          lastFetchError = "elfldr fetch failed for " + candidate
-            + ": HTTP " + response.status;
+        try {
+          flushMark("STAGE5-ELF-FETCH-PRE", "url=../payloads/" + candidate);
+          const response = await fetch("../payloads/" + candidate, {
+            cache: "no-store",
+          });
+          if (!response.ok) {
+            lastFetchError = "elfldr fetch failed for " + candidate
+              + ": HTTP " + response.status;
+            continue;
+          }
+          elfBytes = new Uint8Array(await response.arrayBuffer());
+          name = candidate;
+          break;
+        } catch (err) {
+          lastFetchError = "elfldr fetch failed for " + candidate + ": "
+            + String((err && err.message) || err);
           continue;
         }
-        elfBytes = new Uint8Array(await response.arrayBuffer());
-        name = candidate;
-        break;
       }
       if (elfBytes === null)
         throw new Error(lastFetchError || "elfldr fetch failed");
@@ -7849,7 +7855,7 @@ export function makePoopsEngine(X) {
         elfBytes[2] !== 0x4c || elfBytes[3] !== 0x46
       )
         throw new Error("does not start with \x7fELF");
-      flushMark("STAGE5-ELF-FETCH-OK", "name=" + name + "-bytes=" + declared);
+      flushMark("STAGE5-ELF-FETCH-OK", "name=" + name + ",bytes=" + declared);
       const mapped = (declared + PK.PAGE - 1) & ~(PK.PAGE - 1);
       const er = await sys(
         PSYS.MMAP, i64(0, 0), mapped, PK.PROT_RW,

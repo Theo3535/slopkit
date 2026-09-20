@@ -7821,7 +7821,9 @@ export function makePoopsEngine(X) {
     try {
       const names = o.elfName
         ? [o.elfName]
-        : ["elfldr-ps5.elf", "elfldr-ps5-1360.elf"];
+        : (typeof window !== "undefined" && window.fw_str === "13.00")
+          ? ["elfldr-ps5.elf", "elfldr-ps5-1360.elf"]
+          : ["elfldr-ps5-1360.elf", "elfldr-ps5.elf"];
       let elfBytes = null;
       let name = "";
       let lastFetchError = "";

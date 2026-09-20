@@ -79,12 +79,14 @@
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
         } else {
-          compatibilityNote.textContent = "Action unavailable on this page.";
           if (state === "notify") {
+            compatibilityNote.textContent = "Restricted state detected on this page.";
             prerequisiteNote.textContent = "This browser reported a restricted availability state.";
           } else if (state === "unsupported") {
+            compatibilityNote.textContent = "Unsupported state detected on this page.";
             prerequisiteNote.textContent = "This browser reported an unsupported state.";
           } else {
+            compatibilityNote.textContent = "Unknown state detected on this page.";
             prerequisiteNote.textContent = "Availability could not be determined from this browser.";
           }
         }

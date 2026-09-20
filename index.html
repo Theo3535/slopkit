@@ -29,10 +29,8 @@
     <p class="text-secondary mt-2">Jordy, Egy, Sonic, Yenyen, Zeco, Gezine, Echostretch, Ufm42, TheFloW, John Tornblom, Flatz, Idlesauce and PS5 R&amp;D Discord.</p>
   </div>
 
-  <script src="slopkit/compatibility.js?v=final"></script>
   <script>
     try {
-      var compatibility = window.SlopkitCompatibility;
       var compatibilityNote = document.getElementById("fw-compat-note");
       var prerequisiteNote = document.getElementById("fw-prereq-note");
       var supportMatrix = document.getElementById("fw-support-matrix");
@@ -42,32 +40,15 @@
       if (supportMatrix) {
         supportMatrix.textContent = "Status shown here is informational only.";
       }
-      if (compatibility
-        && typeof compatibility.firmwareStateFromVersion === "function"
-        && compatibilityNote
-        && prerequisiteNote) {
-        var state = compatibility.firmwareStateFromVersion(firmware);
-        if (["full", "notify", "unsupported", "unknown"].indexOf(state) === -1) {
-          state = "unknown";
-        }
-        compatibilityNote.className = "text-center firmware-note firmware-stage-" + state;
-        if (state === "full") {
+      if (compatibilityNote && prerequisiteNote) {
+        compatibilityNote.className = "text-center firmware-note";
+        if (firmware) {
           compatibilityNote.textContent = "Detected firmware " + firmware + ".";
           prerequisiteNote.textContent = "Status information is available on this page.";
-        } else if (state === "notify") {
-          compatibilityNote.textContent = "Detected firmware " + firmware + ".";
-          prerequisiteNote.textContent = "Availability is limited on this page.";
-        } else if (state === "unsupported") {
-          compatibilityNote.textContent = "Detected firmware " + firmware + ".";
-          prerequisiteNote.textContent = "This firmware is not supported by this page.";
         } else {
           compatibilityNote.textContent = "Firmware could not be determined on this page.";
           prerequisiteNote.textContent = "Open this page from the console browser to detect firmware.";
         }
-      } else if (compatibilityNote && prerequisiteNote) {
-        compatibilityNote.className = "text-center firmware-note firmware-stage-unknown";
-        compatibilityNote.textContent = "Firmware could not be determined on this page.";
-        prerequisiteNote.textContent = "Open this page from the console browser to detect firmware.";
       }
     } catch (e) { }
     try { document.getElementById("run-jb").focus(); } catch (e) { }

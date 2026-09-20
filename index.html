@@ -86,7 +86,12 @@
         }
       }
     } catch (e) { }
-    try { document.getElementById("run-jb").focus(); } catch (e) { }
+    try {
+      var initialAction = document.getElementById("run-jb");
+      if (initialAction && initialAction.getAttribute("aria-disabled") !== "true") {
+        initialAction.focus();
+      }
+    } catch (e) { }
   </script>
 </body>
 </html>

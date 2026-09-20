@@ -72,15 +72,18 @@
         if (["full", "notify", "unsupported", "unknown"].indexOf(state) === -1) {
           state = "unknown";
         }
-        if (state !== "full") {
-          state = "unknown";
-        }
         compatibilityNote.className = "text-center firmware-note firmware-stage-" + state;
         if (state === "full") {
           compatibilityNote.textContent = "Full launcher support detected for firmware " + firmware + ".";
           prerequisiteNote.textContent = "Jailbreak and payload sender are available on this firmware.";
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
+        } else if (state === "notify") {
+          compatibilityNote.textContent = "Action unavailable on this page.";
+          prerequisiteNote.textContent = "This browser reported a restricted availability state.";
+        } else if (state === "unsupported") {
+          compatibilityNote.textContent = "Action unavailable on this page.";
+          prerequisiteNote.textContent = "This browser reported an unsupported state.";
         } else {
           compatibilityNote.textContent = "Action unavailable on this page.";
           prerequisiteNote.textContent = "Availability could not be determined from this browser.";

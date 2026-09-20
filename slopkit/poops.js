@@ -7819,7 +7819,7 @@ export function makePoopsEngine(X) {
     flushMark("STAGE5-FETCH-BIN-OK", "bytes=" + binBytes.length);
 
     try {
-      const name = o.elfName || "elfldr-ps5-1360.elf";
+      const name = o.elfName || "elfldr-ps5.elf";
       flushMark("STAGE5-ELF-FETCH-PRE", "url=../payloads/" + name);
       const response = await fetch("../payloads/" + name, {
         cache: "no-store",

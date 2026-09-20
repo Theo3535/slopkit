@@ -57,6 +57,8 @@
       var firmwareMatch = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
       var firmware = firmwareMatch ? firmwareMatch[1] : "";
       document.getElementById("current-fw").textContent = firmware || "Not detected";
+      setActionState(jailbreakButton, false);
+      setActionState(senderButton, false);
       if (supportMatrix && compatibility && compatibility.texts) {
         supportMatrix.textContent = compatibility.texts.supportMatrix;
       }

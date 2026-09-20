@@ -1020,9 +1020,9 @@ const PAYLOADS = Object.freeze([
     { title: "etaHEN", description: "Primary etaHEN payload.",
         name: "etaHEN.elf", info: "etaHEN.elf - etaHEN" },
     { title: "etaHEN 2.6B", description: "etaHEN 2.6B release packaged as an ELF binary.",
-        name: "etaHEN-2.6B.bin", info: "etaHEN-2.6B.bin - etaHEN" },
+        name: "etaHEN-2.6B.bin", info: "etaHEN-2.6B.bin - etaHEN", format: "elf" },
     { title: "etaHEN 2.5B", description: "etaHEN 2.5B release packaged as an ELF binary.",
-        name: "etaHEN_v2.5B.bin", info: "etaHEN_v2.5B.bin - etaHEN" },
+        name: "etaHEN_v2.5B.bin", info: "etaHEN_v2.5B.bin - etaHEN", format: "elf" },
     { title: "Garlic Save Manager", description: "Garlic save management payload.",
         name: "garlic-savemgr_v1.13.1.elf",
         info: "garlic-savemgr_v1.13.1.elf - Garlic" },
@@ -1316,8 +1316,10 @@ async function sendPayloadToElfldr(name) {
         throw new Error("payload is empty");
     if (bytes.length > PAYLOAD_MAX_SIZE)
         throw new Error("payload is larger than the 16 MiB limit");
-    if (bytes.length < 4 || bytes[0] !== 0x7f || bytes[1] !== 0x45
-        || bytes[2] !== 0x4c || bytes[3] !== 0x46)
+    const payloadFormat = payload.format || "elf";
+    if (payloadFormat === "elf"
+        && (bytes.length < 4 || bytes[0] !== 0x7f || bytes[1] !== 0x45
+            || bytes[2] !== 0x4c || bytes[3] !== 0x46))
         throw new Error(payload.name + " is listed as an ELF payload but does not start with the ELF signature");
 
     preparePayloadSender();

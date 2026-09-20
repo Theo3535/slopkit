@@ -62,7 +62,9 @@
       if (supportMatrix && compatibility && compatibility.texts) {
         supportMatrix.textContent = compatibility.texts.supportMatrix;
       }
-      if (compatibility && compatibilityNote) {
+      if (compatibility
+        && typeof compatibility.firmwareStateFromVersion === "function"
+        && compatibilityNote) {
         var state = compatibility.firmwareStateFromVersion(firmware);
         compatibilityNote.className = "text-center firmware-note firmware-stage-" + state;
         if (state === "full") {

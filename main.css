@@ -124,7 +124,9 @@ a:focus-visible {
   #fw-compat-note,
   #fw-prereq-note,
   #fw-support-matrix {
-    width: calc(100% - 2rem);
-    max-width: 100%;
+    width: auto;
+    max-width: none;
+    margin-left: 1rem;
+    margin-right: 1rem;
   }
 }

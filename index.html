@@ -80,13 +80,13 @@
           setActionState(senderButton, true);
         } else {
           if (state === "notify") {
-            compatibilityNote.textContent = "Restricted state detected on this page.";
+            compatibilityNote.textContent = "Detected firmware " + firmware + " is restricted on this page.";
             prerequisiteNote.textContent = "This browser reported a restricted availability state.";
           } else if (state === "unsupported") {
-            compatibilityNote.textContent = "Unsupported state detected on this page.";
+            compatibilityNote.textContent = "Detected firmware " + firmware + " is unsupported on this page.";
             prerequisiteNote.textContent = "This browser reported an unsupported state.";
           } else {
-            compatibilityNote.textContent = "Unknown state detected on this page.";
+            compatibilityNote.textContent = "Firmware could not be determined on this page.";
             prerequisiteNote.textContent = "Availability could not be determined from this browser.";
           }
         }

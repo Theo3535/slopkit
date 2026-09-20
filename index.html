@@ -66,6 +66,9 @@
         && typeof compatibility.firmwareStateFromVersion === "function"
         && compatibilityNote) {
         var state = compatibility.firmwareStateFromVersion(firmware);
+        if (["full", "notify", "unsupported", "unknown"].indexOf(state) === -1) {
+          state = "unknown";
+        }
         compatibilityNote.className = "text-center firmware-note firmware-stage-" + state;
         if (state === "full") {
           compatibilityNote.textContent = "Full launcher support detected for firmware " + firmware + ".";

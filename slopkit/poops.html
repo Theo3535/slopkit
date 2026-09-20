@@ -1247,12 +1247,15 @@ async function refreshConsoleNetworkInfo() {
     return consoleNetworkInfo;
 }
 
+function findListedPayload(name) {
+    if (!/^[A-Za-z0-9._-]+\.(elf|bin)$/.test(name)) return null;
+    for (let i = 0; i < PAYLOADS.length; ++i)
+        if (PAYLOADS[i].name === name) return PAYLOADS[i];
+    return null;
+}
+
 function payloadIsListed(name) {
-    if (!/^[A-Za-z0-9._-]+\.(elf|bin)$/.test(name)) return false;
-    const tiles = payloadMenuEl.getElementsByClassName("payloadTile");
-    for (let i = 0; i < tiles.length; ++i)
-        if (tiles[i].getAttribute("data-name") === name) return true;
-    return false;
+    return findListedPayload(name) !== null;
 }
 
 function payloadSyscallError(operation, result) {
@@ -1292,6 +1295,7 @@ function preparePayloadSender() {
 }
 
 async function sendPayloadToElfldr(name) {
+    const payload = findListedPayload(name);
     if (!elfldrSpawned)
         throw new Error("ELF loader is not ready");
     if (!P || !chain)
@@ -1300,7 +1304,7 @@ async function sendPayloadToElfldr(name) {
         throw new Error("the ROP chain is unusable after " + chainDead);
     if (payloadSenderBlocked)
         throw new Error(payloadSenderBlocked);
-    if (!payloadIsListed(name))
+    if (!payload)
         throw new Error("payload is not listed in this menu");
 
     const response = await fetch("../payloads/" + encodeURIComponent(name),
@@ -1314,7 +1318,7 @@ async function sendPayloadToElfldr(name) {
         throw new Error("payload is larger than the 16 MiB limit");
     if (bytes.length < 4 || bytes[0] !== 0x7f || bytes[1] !== 0x45
         || bytes[2] !== 0x4c || bytes[3] !== 0x46)
-        throw new Error("payload does not start with the ELF signature");
+        throw new Error(payload.name + " is listed as an ELF payload but does not start with the ELF signature");
 
     preparePayloadSender();
     let fd = -1;

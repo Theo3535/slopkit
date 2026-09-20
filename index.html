@@ -76,20 +76,14 @@
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
         } else if (state === "notify") {
-          compatibilityNote.textContent = "This firmware is not available from the landing page launcher.";
-          prerequisiteNote.textContent = "Launch actions stay disabled when the detected firmware is not available from this landing page.";
-          setActionState(jailbreakButton, false);
-          setActionState(senderButton, false);
+          compatibilityNote.textContent = "This firmware does not have a launchable profile on the landing page.";
+          prerequisiteNote.textContent = "Launch actions stay disabled when the detected firmware cannot be started from this landing page.";
         } else if (state === "unsupported") {
           compatibilityNote.textContent = "This firmware is not supported by the landing page launcher.";
           prerequisiteNote.textContent = "Launch actions stay disabled when no supported firmware profile is detected.";
-          setActionState(jailbreakButton, false);
-          setActionState(senderButton, false);
         } else {
           compatibilityNote.textContent = "Firmware could not be detected automatically.";
           prerequisiteNote.textContent = "If you are on a supported PS5 firmware, open this page in the console browser and try again.";
-          setActionState(jailbreakButton, false);
-          setActionState(senderButton, false);
         }
       }
     } catch (e) { }

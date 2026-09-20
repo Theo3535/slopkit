@@ -1058,12 +1058,16 @@ const PAYLOAD_CATALOG_CHECKS = Object.freeze([
             && PAYLOADS_BY_NAME["etaHEN-2.6B.bin"].format === "elf"
     },
     {
-        name: "elf-signature-accepts-listed-bin-shape",
-        ok: payloadHasElfSignature(new Uint8Array([0x7f, 0x45, 0x4c, 0x46]))
+        name: "listed-bin-payloads-explicitly-typed",
+        ok: PAYLOADS.filter(function (payload) {
+            return payload.name.endsWith(".bin");
+        }).every(function (payload) {
+            return payload.format === "elf";
+        })
     },
     {
-        name: "elf-signature-rejects-non-elf-shape",
-        ok: !payloadHasElfSignature(new Uint8Array([0x62, 0x69, 0x6e, 0x00]))
+        name: "internal-kexp-bin-stays-unlisted",
+        ok: !PAYLOADS_BY_NAME["kexp_2026_05_25.bin"]
     }
 ]);
 const PAYLOAD_CATALOG_FAILURE = PAYLOAD_CATALOG_CHECKS.find(function (check) {

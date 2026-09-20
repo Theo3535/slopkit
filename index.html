@@ -3,13 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PS5 SlopKit Jailbreak</title>
+  <title>PS5 SlopKit Launcher</title>
   <link rel="stylesheet" href="main.css?v=final">
 </head>
 <body>
   <div class="p-2">
-    <h1 class="text-center">PS5 SlopKit Jailbreak (9.00-12.00)</h1>
+    <h1 class="text-center">PS5 SlopKit Launcher</h1>
     <p class="text-center" id="top-bar-text">Current Firmware: <span class="fw-bold" id="current-fw">Unknown</span></p>
+    <p class="text-center firmware-note" id="fw-compat-note" aria-live="polite">Detecting compatibility…</p>
+    <p class="text-center text-secondary" id="fw-prereq-note">Use this page directly on the console browser for the best results.</p>
+    <p class="text-center text-secondary" id="fw-support-matrix"></p>
   </div>
 
   <div id="main-content">
@@ -26,11 +29,60 @@
     <p class="text-secondary mt-2">Jordy, Egy, Sonic, Yenyen, Zeco, Gezine, Echostretch, Ufm42, TheFloW, John Tornblom, Flatz, Idlesauce and PS5 R&amp;D Discord.</p>
   </div>
 
+  <script src="slopkit/compatibility.js?v=final"></script>
   <script>
+    function setActionState(element, enabled) {
+      if (!element) return;
+      if (!element.dataset.href && element.getAttribute("href")) {
+        element.dataset.href = element.getAttribute("href");
+      }
+      if (enabled) {
+        element.setAttribute("href", element.dataset.href || "#");
+        element.removeAttribute("aria-disabled");
+        element.tabIndex = 0;
+        return;
+      }
+      element.removeAttribute("href");
+      element.setAttribute("aria-disabled", "true");
+      element.tabIndex = -1;
+    }
+
     try {
+      var compatibility = window.SlopkitCompatibility;
+      var jailbreakButton = document.getElementById("run-jb");
+      var senderButton = document.getElementById("run-sender");
+      var compatibilityNote = document.getElementById("fw-compat-note");
+      var prerequisiteNote = document.getElementById("fw-prereq-note");
+      var supportMatrix = document.getElementById("fw-support-matrix");
       var firmwareMatch = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
       var firmware = firmwareMatch ? firmwareMatch[1] : "";
       document.getElementById("current-fw").textContent = firmware || "Not detected";
+      if (supportMatrix && compatibility && compatibility.texts) {
+        supportMatrix.textContent = compatibility.texts.supportMatrix;
+      }
+      if (compatibility && compatibilityNote) {
+        var state = compatibility.firmwareStateFromVersion(firmware);
+        compatibilityNote.className = "text-center firmware-note firmware-stage-" + state;
+        if (state === "full") {
+          compatibilityNote.textContent = "Full launcher support detected for firmware " + firmware + ".";
+          prerequisiteNote.textContent = "Jailbreak and payload sender are available on this firmware.";
+          setActionState(jailbreakButton, true);
+          setActionState(senderButton, true);
+        } else if (state === "notify") {
+          compatibilityNote.textContent = "Compatibility-only firmware detected: " + firmware + ".";
+          prerequisiteNote.textContent = compatibility.texts.notifyAvailability + " " + compatibility.texts.notifyReadiness;
+          setActionState(jailbreakButton, false);
+          setActionState(senderButton, false);
+        } else if (state === "unsupported") {
+          compatibilityNote.textContent = "This firmware is not supported by the landing page launcher.";
+          prerequisiteNote.textContent = "Launch actions stay disabled when no supported firmware profile is detected.";
+          setActionState(jailbreakButton, false);
+          setActionState(senderButton, false);
+        } else {
+          compatibilityNote.textContent = "Firmware could not be detected automatically.";
+          prerequisiteNote.textContent = "If you are on a supported PS5 firmware, open this page in the console browser and try again.";
+        }
+      }
     } catch (e) { }
     try { document.getElementById("run-jb").focus(); } catch (e) { }
   </script>

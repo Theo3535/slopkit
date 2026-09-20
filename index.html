@@ -77,12 +77,6 @@
           prerequisiteNote.textContent = "Jailbreak and payload sender are available on this firmware.";
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
-        } else if (state === "notify") {
-          compatibilityNote.textContent = "Action unavailable on this page.";
-          prerequisiteNote.textContent = "This page keeps launch actions disabled unless availability is confirmed.";
-        } else if (state === "unsupported") {
-          compatibilityNote.textContent = "Action unavailable on this page.";
-          prerequisiteNote.textContent = "This page keeps launch actions disabled unless availability is confirmed.";
         } else {
           compatibilityNote.textContent = "Action unavailable on this page.";
           prerequisiteNote.textContent = "This page keeps launch actions disabled unless availability is confirmed.";

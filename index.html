@@ -69,7 +69,7 @@
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
         } else if (state === "notify") {
-          compatibilityNote.textContent = "Compatibility-only firmware detected: " + firmware + ".";
+          compatibilityNote.textContent = "Notify-only firmware detected: " + firmware + ". Launch actions are disabled on this page.";
           prerequisiteNote.textContent = compatibility.texts.notifyAvailability + " " + compatibility.texts.notifyReadiness;
           setActionState(jailbreakButton, false);
           setActionState(senderButton, false);

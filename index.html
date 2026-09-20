@@ -81,6 +81,8 @@
         } else {
           compatibilityNote.textContent = "Firmware could not be detected automatically.";
           prerequisiteNote.textContent = "If you are on a supported PS5 firmware, open this page in the console browser and try again.";
+          setActionState(jailbreakButton, false);
+          setActionState(senderButton, false);
         }
       }
     } catch (e) { }

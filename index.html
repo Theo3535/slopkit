@@ -70,7 +70,7 @@
           setActionState(senderButton, true);
         } else if (state === "notify") {
           compatibilityNote.textContent = "Notify-only firmware detected: " + firmware + ". Launch actions are disabled on this page.";
-          prerequisiteNote.textContent = compatibility.texts.notifyAvailability + " " + compatibility.texts.notifyReadiness;
+          prerequisiteNote.textContent = "The repository contains notify-only compatibility data for this firmware, but this landing page does not expose a notify launcher.";
           setActionState(jailbreakButton, false);
           setActionState(senderButton, false);
         } else if (state === "unsupported") {

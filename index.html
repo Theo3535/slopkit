@@ -37,7 +37,9 @@
         element.dataset.href = element.getAttribute("href");
       }
       if (enabled) {
-        element.setAttribute("href", element.dataset.href || "#");
+        if (element.dataset.href) {
+          element.setAttribute("href", element.dataset.href);
+        }
         element.removeAttribute("aria-disabled");
         element.tabIndex = 0;
         return;

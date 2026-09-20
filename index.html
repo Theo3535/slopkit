@@ -3,13 +3,16 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>PS5 SlopKit Jailbreak (9.00-13.00)</title>
+  <title>PS5 SlopKit Launcher</title>
   <link rel="stylesheet" href="main.css?v=final">
 </head>
 <body>
   <div class="p-2">
-    <h1 class="text-center">PS5 SlopKit Jailbreak (9.00-13.00)</h1>
+    <h1 class="text-center">PS5 SlopKit Launcher</h1>
     <p class="text-center" id="top-bar-text">Current Firmware: <span class="fw-bold" id="current-fw">Unknown</span></p>
+    <p class="text-center firmware-note" id="fw-compat-note" aria-live="polite">Detecting compatibility…</p>
+    <p class="text-center text-secondary" id="fw-prereq-note">Use this page directly on the console browser for the best results.</p>
+    <p class="text-center text-secondary" id="fw-support-matrix"></p>
   </div>
 
   <div id="main-content">
@@ -28,11 +31,26 @@
 
   <script>
     try {
+      var compatibilityNote = document.getElementById("fw-compat-note");
+      var prerequisiteNote = document.getElementById("fw-prereq-note");
+      var supportMatrix = document.getElementById("fw-support-matrix");
       var firmwareMatch = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
       var firmware = firmwareMatch ? firmwareMatch[1] : "";
       document.getElementById("current-fw").textContent = firmware || "Not detected";
+      if (supportMatrix) {
+        supportMatrix.textContent = "Status shown here is informational only.";
+      }
+      if (compatibilityNote && prerequisiteNote) {
+        compatibilityNote.className = "text-center firmware-note";
+        if (firmware) {
+          compatibilityNote.textContent = "Detected firmware " + firmware + ".";
+          prerequisiteNote.textContent = "Status information is available on this page.";
+        } else {
+          compatibilityNote.textContent = "Firmware could not be determined on this page.";
+          prerequisiteNote.textContent = "Open this page from the console browser to detect firmware.";
+        }
+      }
     } catch (e) { }
-    try { document.getElementById("run-jb").focus(); } catch (e) { }
   </script>
 </body>
 </html>

@@ -31,77 +31,46 @@
 
   <script src="slopkit/compatibility.js?v=final"></script>
   <script>
-    function setActionState(element, enabled) {
-      if (!element) return;
-      if (!element.dataset.href && element.getAttribute("href")) {
-        element.dataset.href = element.getAttribute("href");
-      }
-      if (enabled) {
-        if (element.dataset.href) {
-          element.setAttribute("href", element.dataset.href);
-        }
-        element.removeAttribute("aria-disabled");
-        element.tabIndex = 0;
-        return;
-      }
-      element.removeAttribute("href");
-      element.setAttribute("aria-disabled", "true");
-      element.tabIndex = -1;
-    }
-
     try {
       var compatibility = window.SlopkitCompatibility;
-      var jailbreakButton = document.getElementById("run-jb");
-      var senderButton = document.getElementById("run-sender");
       var compatibilityNote = document.getElementById("fw-compat-note");
       var prerequisiteNote = document.getElementById("fw-prereq-note");
       var supportMatrix = document.getElementById("fw-support-matrix");
       var firmwareMatch = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
       var firmware = firmwareMatch ? firmwareMatch[1] : "";
       document.getElementById("current-fw").textContent = firmware || "Not detected";
-      setActionState(jailbreakButton, false);
-      setActionState(senderButton, false);
-      if (supportMatrix && compatibility && compatibility.texts
-        && typeof compatibility.texts.supportMatrix === "string") {
-        supportMatrix.textContent = compatibility.texts.supportMatrix;
+      if (supportMatrix) {
+        supportMatrix.textContent = "Status shown here is informational only.";
       }
       if (compatibility
         && typeof compatibility.firmwareStateFromVersion === "function"
-        && compatibilityNote) {
+        && compatibilityNote
+        && prerequisiteNote) {
         var state = compatibility.firmwareStateFromVersion(firmware);
         if (["full", "notify", "unsupported", "unknown"].indexOf(state) === -1) {
           state = "unknown";
         }
         compatibilityNote.className = "text-center firmware-note firmware-stage-" + state;
         if (state === "full") {
-          compatibilityNote.textContent = "Full launcher support detected for firmware " + firmware + ".";
-          prerequisiteNote.textContent = "Jailbreak and payload sender are available on this firmware.";
-          setActionState(jailbreakButton, true);
-          setActionState(senderButton, true);
+          compatibilityNote.textContent = "Detected firmware " + firmware + ".";
+          prerequisiteNote.textContent = "Status information is available on this page.";
+        } else if (state === "notify") {
+          compatibilityNote.textContent = "Detected firmware " + firmware + ".";
+          prerequisiteNote.textContent = "Availability is limited on this page.";
+        } else if (state === "unsupported") {
+          compatibilityNote.textContent = "Detected firmware " + firmware + ".";
+          prerequisiteNote.textContent = "This firmware is not supported by this page.";
         } else {
-          if (state === "notify") {
-            compatibilityNote.textContent = "Detected firmware " + firmware + " has restricted availability on this page.";
-            prerequisiteNote.textContent = "This browser reported a restricted availability state.";
-          } else if (state === "unsupported") {
-            compatibilityNote.textContent = "Detected firmware " + firmware + " is unsupported on this page.";
-            prerequisiteNote.textContent = "This browser reported an unsupported state.";
-          } else {
-            compatibilityNote.textContent = "Firmware could not be determined on this page.";
-            prerequisiteNote.textContent = "Availability could not be determined from this browser.";
-          }
+          compatibilityNote.textContent = "Firmware could not be determined on this page.";
+          prerequisiteNote.textContent = "Open this page from the console browser to detect firmware.";
         }
       } else if (compatibilityNote && prerequisiteNote) {
         compatibilityNote.className = "text-center firmware-note firmware-stage-unknown";
         compatibilityNote.textContent = "Firmware could not be determined on this page.";
-        prerequisiteNote.textContent = "Availability could not be determined from this browser.";
+        prerequisiteNote.textContent = "Open this page from the console browser to detect firmware.";
       }
     } catch (e) { }
-    try {
-      var initialAction = document.getElementById("run-jb");
-      if (initialAction && initialAction.getAttribute("aria-disabled") !== "true") {
-        initialAction.focus();
-      }
-    } catch (e) { }
+    try { document.getElementById("run-jb").focus(); } catch (e) { }
   </script>
 </body>
 </html>

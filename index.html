@@ -78,15 +78,15 @@
           prerequisiteNote.textContent = "Jailbreak and payload sender are available on this firmware.";
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
-        } else if (state === "notify") {
-          compatibilityNote.textContent = "Action unavailable on this page.";
-          prerequisiteNote.textContent = "This browser reported a restricted availability state.";
-        } else if (state === "unsupported") {
-          compatibilityNote.textContent = "Action unavailable on this page.";
-          prerequisiteNote.textContent = "This browser reported an unsupported state.";
         } else {
           compatibilityNote.textContent = "Action unavailable on this page.";
-          prerequisiteNote.textContent = "Availability could not be determined from this browser.";
+          if (state === "notify") {
+            prerequisiteNote.textContent = "This browser reported a restricted availability state.";
+          } else if (state === "unsupported") {
+            prerequisiteNote.textContent = "This browser reported an unsupported state.";
+          } else {
+            prerequisiteNote.textContent = "Availability could not be determined from this browser.";
+          }
         }
       }
     } catch (e) { }

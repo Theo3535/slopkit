@@ -105,12 +105,6 @@ a:focus-visible {
 .firmware-stage-full {
   color: #a3be8c;
 }
-.firmware-stage-notify {
-  color: #ebcb8b;
-}
-.firmware-stage-unsupported {
-  color: #bf616a;
-}
 .firmware-stage-unknown {
   color: var(--text-color-secondary);
 }

@@ -90,7 +90,7 @@
             prerequisiteNote.textContent = "Availability could not be determined from this browser.";
           }
         }
-      } else if (compatibilityNote) {
+      } else if (compatibilityNote && prerequisiteNote) {
         compatibilityNote.className = "text-center firmware-note firmware-stage-unknown";
         compatibilityNote.textContent = "Firmware could not be determined on this page.";
         prerequisiteNote.textContent = "Availability could not be determined from this browser.";

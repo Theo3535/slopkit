@@ -1041,6 +1041,36 @@ const PAYLOADS = Object.freeze([
     { title: "A53 exploit", description: "Experimental low-level A53 payload.",
         name: "a53_exploit.elf", info: "a53_exploit.elf - A53" }
 ]);
+const PAYLOADS_BY_NAME = Object.freeze(PAYLOADS.reduce(function (out, payload) {
+    out[payload.name] = Object.freeze(payload);
+    return out;
+}, Object.create(null)));
+
+function payloadHasElfSignature(bytes) {
+    return bytes.length >= 4 && bytes[0] === 0x7f && bytes[1] === 0x45
+        && bytes[2] === 0x4c && bytes[3] === 0x46;
+}
+
+const PAYLOAD_CATALOG_CHECKS = Object.freeze([
+    {
+        name: "etaHEN-bin-listed-as-elf",
+        ok: !!PAYLOADS_BY_NAME["etaHEN-2.6B.bin"]
+            && PAYLOADS_BY_NAME["etaHEN-2.6B.bin"].format === "elf"
+    },
+    {
+        name: "elf-signature-accepts-listed-bin-shape",
+        ok: payloadHasElfSignature(new Uint8Array([0x7f, 0x45, 0x4c, 0x46]))
+    },
+    {
+        name: "elf-signature-rejects-non-elf-shape",
+        ok: !payloadHasElfSignature(new Uint8Array([0x62, 0x69, 0x6e, 0x00]))
+    }
+]);
+const PAYLOAD_CATALOG_FAILURE = PAYLOAD_CATALOG_CHECKS.find(function (check) {
+    return !check.ok;
+}) || null;
+if (PAYLOAD_CATALOG_FAILURE)
+    throw new Error("payload catalog invariant failed: " + PAYLOAD_CATALOG_FAILURE.name);
 
 function populatePayloadButtons() {
     const grid = payloadMenuEl.getElementsByClassName("payloadGrid")[0];
@@ -1249,9 +1279,7 @@ async function refreshConsoleNetworkInfo() {
 
 function findListedPayload(name) {
     if (!/^[A-Za-z0-9._-]+\.(elf|bin)$/.test(name)) return null;
-    for (let i = 0; i < PAYLOADS.length; ++i)
-        if (PAYLOADS[i].name === name) return PAYLOADS[i];
-    return null;
+    return PAYLOADS_BY_NAME[name] || null;
 }
 
 function payloadIsListed(name) {
@@ -1317,9 +1345,7 @@ async function sendPayloadToElfldr(name) {
     if (bytes.length > PAYLOAD_MAX_SIZE)
         throw new Error("payload is larger than the 16 MiB limit");
     const payloadFormat = payload.format || "elf";
-    if (payloadFormat === "elf"
-        && (bytes.length < 4 || bytes[0] !== 0x7f || bytes[1] !== 0x45
-            || bytes[2] !== 0x4c || bytes[3] !== 0x46))
+    if (payloadFormat === "elf" && !payloadHasElfSignature(bytes))
         throw new Error(payload.name + " is listed as an ELF payload but does not start with the ELF signature");
 
     preparePayloadSender();

@@ -74,7 +74,7 @@
           setActionState(senderButton, true);
         } else if (state === "notify") {
           compatibilityNote.textContent = "This firmware is not available from the landing page launcher.";
-          prerequisiteNote.textContent = "Launch actions stay disabled when the full launcher flow is not available for the detected firmware.";
+          prerequisiteNote.textContent = "Launch actions stay disabled when the detected firmware is not available from this landing page.";
           setActionState(jailbreakButton, false);
           setActionState(senderButton, false);
         } else if (state === "unsupported") {

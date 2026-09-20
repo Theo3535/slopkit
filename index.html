@@ -81,9 +81,12 @@
         } else if (state === "notify") {
           compatibilityNote.textContent = "Limited compatibility detected.";
           prerequisiteNote.textContent = "Action unavailable on this page.";
+        } else if (state === "unsupported") {
+          compatibilityNote.textContent = "Action unavailable on this page.";
+          prerequisiteNote.textContent = "Availability could not be confirmed for the detected firmware.";
         } else {
           compatibilityNote.textContent = "Action unavailable on this page.";
-          prerequisiteNote.textContent = "This page keeps launch actions disabled unless availability is confirmed.";
+          prerequisiteNote.textContent = "Availability could not be determined from this browser.";
         }
       }
     } catch (e) { }

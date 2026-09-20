@@ -1287,7 +1287,7 @@ function findListedPayload(name) {
 }
 
 function payloadIsListed(name) {
-    return findListedPayload(name) !== null;
+    return /^[A-Za-z0-9._-]+\.elf$/.test(name) && findListedPayload(name) !== null;
 }
 
 function payloadSyscallError(operation, result) {

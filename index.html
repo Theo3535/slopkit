@@ -79,8 +79,8 @@
           setActionState(jailbreakButton, true);
           setActionState(senderButton, true);
         } else if (state === "notify") {
-          compatibilityNote.textContent = "Limited availability on this page.";
-          prerequisiteNote.textContent = "Launch actions remain disabled on this page.";
+          compatibilityNote.textContent = "Detected firmware is recognized, but launch actions are unavailable on this page.";
+          prerequisiteNote.textContent = "This page keeps launch actions disabled for limited-availability firmware.";
         } else if (state === "unsupported") {
           compatibilityNote.textContent = "This firmware is not supported on this page.";
           prerequisiteNote.textContent = "This page keeps launch actions disabled for unsupported firmware.";

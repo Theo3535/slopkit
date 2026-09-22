@@ -5,11 +5,10 @@ if (!navigator.userAgent.includes('PlayStation 5')) {
 
 const supportedFirmwares = [
     "9.00", "9.05", "9.20", "9.40", "9.60", "10.00", "10.01", "10.20",
-    "10.40", "10.60", "11.00", "11.20", "11.40", "11.60", "12.00",
+    "10.40", "10.60", "11.00", "11.20", "11.40", "11.60", "12.00","13.00", "13.20", "13.40", "13.60",
     // 13.40 profile is LIVE-CANDIDATE status (see offsets/13.40.js header):
     // full 13.20-derived tables + live-verified anchors. Boot test = the
     // getpid check in prepare() (zero kernel interaction, safe pass/fail).
-    "13.00", "13.20", "13.40", "13.60"
 ];
 const fw_match = /PlayStation 5\/(\d+\.\d+)/.exec(navigator.userAgent);
 window.fw_str = fw_match ? fw_match[1] : "";
@@ -622,4 +621,4 @@ async function prepare(p) {
 let fwScript = document.createElement('script');
 document.body.appendChild(fwScript);
 
-fwScript.setAttribute('src', `./offsets/${window.fw_str}.js?v=` + Date.now());
+fwScript.setAttribute('src', `./offsets/13.00.js?v=` + Date.now());
